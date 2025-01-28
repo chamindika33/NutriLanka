@@ -7,7 +7,7 @@ from bin.response.response_model import ErrorResponseModel
 
 db: Session = next(db_connection())
 
-def create_new_food_record(request):
+def create_new_food_record(request,image_data):
     try:
         data = pg_models.NutritionInfo(
             food_name = request.food_name,
@@ -29,7 +29,8 @@ def create_new_food_record(request):
             zinc = request.zinc,
             selenium = request.selenium,
             copper = request.copper,
-            manganese = request.manganese
+            manganese = request.manganese,
+            food_img = image_data
         )
 
         db.add(data)
@@ -93,3 +94,40 @@ def get_filter_data(filter_by,filter_pass,filter_name):
 
     except SQLAlchemyError as e:
         raise ErrorResponseModel(str(e), 404)
+    
+def get_all_food_info(offset,record_per_page):
+    try:
+        data = db.query(
+            pg_models.NutritionInfo
+        ).order_by(pg_models.NutritionInfo.food_id.asc())
+        data = data.offset(offset).limit(record_per_page).all()
+
+        total_records = db.query(pg_models.NutritionInfo).count()
+
+        result = {
+            "total_records": total_records,
+            "data": data
+        }
+
+        return result
+
+    except SQLAlchemyError as e:
+        raise ErrorResponseModel(str(e), 404)
+    
+def delete_records(food_id):
+    try:
+        delete_query = delete(pg_models.NutritionInfo).where(
+            pg_models.NutritionInfo.food_id == food_id
+        )
+
+        result = db.execute(delete_query)
+        db.commit()
+
+        rows_deleted = result.rowcount
+        return rows_deleted
+    
+    except SQLAlchemyError as e:
+        print(str(e))
+        db.rollback()
+        return 0
+ 

@@ -1,6 +1,6 @@
 from uuid import UUID
 from pydantic import BaseModel,validator
-from typing import List
+from typing import List, Optional
 
 class NewFoodRecord(BaseModel):
     food_name: str
@@ -23,6 +23,7 @@ class NewFoodRecord(BaseModel):
     selenium: float
     copper: float
     manganese: float
+    food_img: Optional[str] = None # Base64-encoded string
 
 
 class FoodFilter(BaseModel):
@@ -30,3 +31,10 @@ class FoodFilter(BaseModel):
     filter_pass: str # high/low
     filter_name: str #food name
     
+
+class AllFoodData(BaseModel):
+    page_number : int
+    record_per_page : int
+
+class DeleteFoodData(BaseModel):
+   food_id : int

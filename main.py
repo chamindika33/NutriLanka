@@ -4,7 +4,7 @@ load_dotenv(override=True)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import threading
-from bin.routers.food_roter import router
+from bin.routers.food_router import router
 
 import uvicorn
 
