@@ -2,30 +2,34 @@ from sqlite3.dbapi2 import Timestamp
 import uuid
 from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, Numeric, func , Integer,Float
+from sqlalchemy import Column, DateTime, func, ForeignKey
+from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, Numeric, func , Integer,Float,Boolean
 from bin.db.postgresDB import Base,engine
 from sqlalchemy.orm import column_property
 from bin.services.generator import public_token
 
-class User(Timestamp, Base):
-    __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4() ,primary_key=True, index=True)
+class Timestamp:
+    created_at = Column(DateTime, default=func.now())  
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now()) 
+
+class User(Base,Timestamp):
+    __tablename__ = "user"
+
+    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    password = deferred(Column(TEXT, nullable=False))
-    email = Column(TEXT, unique=True , nullable=False)
-    user_img = Column(TEXT)
-    age = Column(Integer, nullable=False)
+    password = deferred(Column(TEXT, nullable=False))  # Deferred for security
+    email = Column(TEXT, unique=True, nullable=False)
+    user_img = Column(TEXT, nullable=True)  # Optional profile image
+    age = Column(Integer, nullable=True)
     gender = Column(String(15), nullable=True)
     location = Column(String(255), nullable=True)
-    height = Column(Integer, nullable=False)
-    weight = Column(Integer, nullable=False)
+    height = Column(Integer, nullable=False)  # In cm
+    weight = Column(Integer, nullable=False)  # In kg
     bmi_value = Column(Float, nullable=False)
-    email_verified = Column(DateTime, nullable=True)
-    dietary_preferences = Column(String(255), nullable=False) #Vegetarianism #Veganism #Kosher #Keto #Diabetes #Low carb
-    status = deferred(Column(Numeric))
-    # user_role = relationship("UserHasUserRoles" , back_populates="users" , lazy='dynamic')
-    
+    email_verified = Column(Boolean, nullable=False, default=False)  # Set default to False
+    dietary_preferences = Column(String(255), nullable=True)  
+    status = Column(Boolean, nullable=False, default=True)  # Active status by default
 
 class NutritionInfo(Base):
     __tablename__ = 'nutrition_info'
@@ -52,6 +56,16 @@ class NutritionInfo(Base):
     copper= Column(Float, index=True)
     manganese= Column(Float, index=True)
     food_img = Column(String, index=True)
+
+class UserFavoriteFoodInfo(Base):
+    __tablename__ = 'user_favorite_food'
+
+    record_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True)
+    food_id = Column(Integer, ForeignKey('nutrition_info.food_id'))  
+    
+    food = relationship("NutritionInfo", backref="favorite_foods")
+   
    
 Base.metadata.create_all(bind=engine)
 print("All tables created successfully.")

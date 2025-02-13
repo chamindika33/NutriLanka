@@ -1,15 +1,41 @@
 from uuid import UUID
-from pydantic import BaseModel,validator
-from typing import List
+from pydantic import BaseModel,EmailStr, Field, field_validator
+from typing import List, Any , Union
+from bin.services.custom_validations import email_validation
 
 class NewUser(BaseModel):
-    name: str
+    user_name: str
     password: str
-    email: str
+    email: EmailStr
     age:int
     gender:str
     location:int
-    height:int
+    height:int #should be in cm
     weight:int
     dieatary_preferences:str
     
+
+
+class UserLoginRequest(BaseModel):
+
+    username: EmailStr
+    password: str = Field(...)
+
+
+    @field_validator('username')
+    def func(cls, value):
+        method = None
+        if isinstance(value, str):
+            method = 'email'
+            email_validation(cls,value)
+
+        if isinstance(value, type(None)):
+            raise ValueError('Email required')
+        
+        setattr(cls , 'method' , method)
+        return value
+   
+
+class AddFavoriteItem(BaseModel):
+    user_id : str
+    food_ids : List[int]

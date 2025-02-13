@@ -54,6 +54,7 @@ def get_food_info(name):
     except SQLAlchemyError as e:
         raise ErrorResponseModel(str(e), 404)
     
+    
 def get_filter_data(filter_by,filter_pass,filter_name):
     try:
         if filter_by == 'food':
