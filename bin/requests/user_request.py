@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import date, datetime
 from pydantic import BaseModel,EmailStr, Field, field_validator
 from typing import List, Any , Union
 from bin.services.custom_validations import email_validation
@@ -7,9 +8,10 @@ class NewUser(BaseModel):
     user_name: str
     password: str
     email: EmailStr
-    age:int
+    # age:int
+    date_of_birth : date
     gender:str
-    location:int
+    location:str
     height:int #should be in cm
     weight:int
     dieatary_preferences:str

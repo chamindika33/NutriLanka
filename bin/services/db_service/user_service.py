@@ -16,7 +16,7 @@ async def create_new_user(user):
             name = user["user_name"],
             password = user["password"],
             email = user["email"],
-            age = user["age"],
+            date_of_birth = user["date_of_birth"],
             gender = user["gender"],
             location = user["location"],
             height = user["height"],

@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from bin.response.response_model import ResponseModel,ErrorResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
 from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list
-
+from bin.services.jwt_auth import create_token
 
 class UserManager():
     async def create_user(self,request):
@@ -15,7 +15,7 @@ class UserManager():
                 "user_name" : request.user_name,
                 "email" :  request.email,
                 "password" : hash_password(request.password),
-                "age" : request.age,
+                "date_of_birth" : request.date_of_birth,
                 "gender" : request.gender,
                 "location" : request.location,
                 "height" : request.height,
@@ -23,7 +23,9 @@ class UserManager():
                 "bmi_value" : bmi_value,
                 "email_verified" : True,
                 "status" : True,
-                "dietary_preferences" : request.dieatary_preferences
+                "dietary_preferences" : request.dieatary_preferences,
+                "role_id" : 2
+
             }
                     
             await create_new_user(user)
@@ -40,7 +42,22 @@ class UserManager():
             if user:
                 if verify_password(pw=request.password, hash_pw=user.password):
                     
-                    return ResponseModel(request, "Successfully login to user")
+                    return {
+                        "result": {
+                            "id": user.id,
+                            "name": user.name,
+                            "user_img": user.user_img,
+                            "email_address": user.email,
+                            "date_of_birth": user.date_of_birth,
+                            "gender": user.gender,
+                            "location": user.location,
+                            "height": user.height,
+                            "weight": user.weight,
+                            "bmi_value": user.bmi_value
+
+                        },
+                        "token": create_token(user=user)
+                    }
                 
                 else:
                     raise HTTPException(401, {

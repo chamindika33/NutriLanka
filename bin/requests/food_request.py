@@ -38,3 +38,8 @@ class AllFoodData(BaseModel):
 
 class DeleteFoodData(BaseModel):
    food_id : int
+
+class FoodMeasurements(BaseModel):
+   food_id : int
+   unit_id : int
+   weight_in_grams : float

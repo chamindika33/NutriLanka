@@ -58,12 +58,43 @@ def get_food_info(name):
 def get_filter_data(filter_by,filter_pass,filter_name):
     try:
         if filter_by == 'food':
-            data = db.query(
+            result = db.query(
                     pg_models.NutritionInfo
                 ).filter(
                     pg_models.NutritionInfo.native_name == filter_name
                 ).first()
             
+            if not result:
+                return {"error": "No nutrition data found"}
+            
+            result2= db.query(
+                    pg_models.FoodMeasurement
+                ).filter(
+                    pg_models.FoodMeasurement.food_id == result.food_id
+                ).all()
+            
+            if not result2:
+                return {"nutrition_data": result, "measurement_data": {}}
+            
+            unit_ids = {record.unit_id for record in result2}
+
+            units = db.query(pg_models.FoodUnit).filter(
+                    pg_models.FoodUnit.unit_id.in_(unit_ids)
+                ).all()
+
+            unit_map = {unit.unit_id: unit for unit in units}
+   
+                
+            measurement_data = {
+                record.unit_id: unit_map.get(record.unit_id, None)
+                for record in result2
+            }
+
+            return {
+                "nutrition_data": result,
+                "measurement_data": measurement_data
+            }
+        
         elif filter_by == 'nutrition':
             ROW_LIMIT = 10
             colomn_to_filter = getattr(pg_models.NutritionInfo,filter_name,None)
@@ -131,4 +162,22 @@ def delete_records(food_id):
         print(str(e))
         db.rollback()
         return 0
+    
+def insert_food_measurements(request):
+    try:
+        data = pg_models.FoodMeasurement(
+           food_id = request.food_id,
+           unit_id = request.unit_id,
+           weight_in_grams =  request.weight_in_grams
+
+        )
+
+        db.add(data)
+        db.commit()
+        db.refresh(data)
+        return data
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ErrorResponseModel(str(e), 404)
  

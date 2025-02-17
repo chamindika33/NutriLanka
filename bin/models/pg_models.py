@@ -6,7 +6,7 @@ from sqlalchemy import Column, DateTime, func, ForeignKey
 from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, Numeric, func , Integer,Float,Boolean
 from bin.db.postgresDB import Base,engine
 from sqlalchemy.orm import column_property
-from bin.services.generator import public_token
+
 
 
 class Timestamp:
@@ -21,7 +21,8 @@ class User(Base,Timestamp):
     password = deferred(Column(TEXT, nullable=False))  # Deferred for security
     email = Column(TEXT, unique=True, nullable=False)
     user_img = Column(TEXT, nullable=True)  # Optional profile image
-    age = Column(Integer, nullable=True)
+    # age = Column(Integer, nullable=True)
+    date_of_birth = Column(Date, nullable=False)
     gender = Column(String(15), nullable=True)
     location = Column(String(255), nullable=True)
     height = Column(Integer, nullable=False)  # In cm
@@ -56,6 +57,8 @@ class NutritionInfo(Base):
     copper= Column(Float, index=True)
     manganese= Column(Float, index=True)
     food_img = Column(String, index=True)
+    role_id = Column(Integer , ForeignKey("user_roles.id"), nullable=False)
+
 
 class UserFavoriteFoodInfo(Base):
     __tablename__ = 'user_favorite_food'
@@ -66,6 +69,37 @@ class UserFavoriteFoodInfo(Base):
     
     food = relationship("NutritionInfo", backref="favorite_foods")
    
+
+class FoodUnit(Base):
+    __tablename__ = 'food_unit'
+
+    unit_id = Column(Integer, primary_key=True, index=True)
+    unit = Column(String, index=True)
+    unit_name = Column(String, index=True)
+    unit_in_grams = Column(Float, index=True,nullable=True)
+
+class FoodMeasurement(Base):
+    __tablename__ = 'food_measurement'
+
+    id = Column(Integer, primary_key=True, index=True)
+    food_id = Column(Integer, ForeignKey('nutrition_info.food_id'), index=True)
+    unit_id = Column(Integer, ForeignKey('food_unit.unit_id'), index=True)
+    weight_in_grams = Column(Float, nullable=False)  # Defines how much 1 unit weighs in grams
+
+    # Relationships
+    food = relationship("NutritionInfo", back_populates="measurements")
+    unit = relationship("FoodUnit", back_populates="measurements")
+
+NutritionInfo.measurements = relationship("FoodMeasurement", back_populates="food", cascade="all, delete-orphan")
+FoodUnit.measurements = relationship("FoodMeasurement", back_populates="unit", cascade="all, delete-orphan")
+
+class UserRole(Timestamp, Base):
+    __tablename__ = "user_roles"
+
+    id = Column(Integer , primary_key=True, index=True)
+    role_name = Column(String(50), nullable=False)
+
+
    
 Base.metadata.create_all(bind=engine)
 print("All tables created successfully.")
