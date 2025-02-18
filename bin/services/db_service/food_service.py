@@ -1,4 +1,5 @@
 from bin.db.postgresDB import db_connection
+from collections import OrderedDict
 from sqlalchemy.orm import Session
 from sqlalchemy import delete,update
 from bin.models import pg_models
@@ -42,12 +43,12 @@ def create_new_food_record(request,image_data):
         db.rollback()
         raise ErrorResponseModel(str(e), 404)
     
-def get_food_info(name):
+def get_food_info(food_id):
     try:
         data = db.query(
             pg_models.NutritionInfo
         ).filter(
-            pg_models.NutritionInfo.native_name == name
+            pg_models.NutritionInfo.food_id == food_id
         ).first()
 
         return data
@@ -82,15 +83,30 @@ def get_filter_data(filter_by,filter_pass,filter_name):
                     pg_models.FoodUnit.unit_id.in_(unit_ids)
                 ).all()
 
-            unit_map = {unit.unit_id: unit for unit in units}
-   
-                
-            measurement_data = {
-                record.unit_id: unit_map.get(record.unit_id, None)
-                for record in result2
-            }
+            unit_map = {unit.unit_id: {
+                "unit": unit.unit_name,
+                "unit_name": unit.unit_name,
+                "unit_in_grams": unit.unit_in_grams,
+                "unit_id": unit.unit_id
+            } for unit in units}
 
-            return {
+
+            default_unit = {
+                "unit": "g",
+                "unit_name": "grams",
+                "unit_in_grams": 100,
+                "unit_id": 0
+            }
+           
+            measurement_data = OrderedDict()
+            measurement_data[default_unit["unit_id"]] = default_unit
+                
+           
+
+            for record in result2:
+                measurement_data[record.unit_id] = unit_map.get(record.unit_id, None)
+
+            data = {
                 "nutrition_data": result,
                 "measurement_data": measurement_data
             }
@@ -180,4 +196,18 @@ def insert_food_measurements(request):
     except SQLAlchemyError as e:
         db.rollback()
         raise ErrorResponseModel(str(e), 404)
- 
+    
+def get_food_measurement_details(food_id,unit_id):
+    try:
+        data= db.query(
+                pg_models.FoodMeasurement
+            ).filter(
+              (pg_models.FoodMeasurement.food_id == food_id) and
+              (pg_models.FoodMeasurement.unit_id == unit_id)
+            ).first()
+
+        return data
+    
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ErrorResponseModel(str(e), 404)

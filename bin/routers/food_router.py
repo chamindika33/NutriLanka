@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query
 from fastapi.exceptions import HTTPException
-from bin.requests.food_request import NewFoodRecord,FoodFilter,AllFoodData,DeleteFoodData,FoodMeasurements
+from bin.requests.food_request import NewFoodRecord,FoodFilter,AllFoodData,DeleteFoodData,FoodMeasurements,FoodMeasurementsFilter
 from bin.controllers.food_nutrition_controller import nutritionController
 
 router = APIRouter(
@@ -19,8 +19,8 @@ def add_food_measurement(request:FoodMeasurements):
     
 
 @router.get("/get-food-nutrition-info")
-def get_food_nutrition_info(size:float,name:str):
-    return nutritionController.get_food_nutrition_info(size,name)
+def get_food_nutrition_info(request:FoodMeasurementsFilter):
+    return nutritionController.get_food_nutrition_info(request)
 
 
 @router.post("/filter-food-record")

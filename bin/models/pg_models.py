@@ -31,6 +31,8 @@ class User(Base,Timestamp):
     email_verified = Column(Boolean, nullable=False, default=False)  # Set default to False
     dietary_preferences = Column(String(255), nullable=True)  
     status = Column(Boolean, nullable=False, default=True)  # Active status by default
+    role_id = Column(Integer , ForeignKey("user_roles.id"), nullable=False)
+
 
 class NutritionInfo(Base):
     __tablename__ = 'nutrition_info'
@@ -57,8 +59,7 @@ class NutritionInfo(Base):
     copper= Column(Float, index=True)
     manganese= Column(Float, index=True)
     food_img = Column(String, index=True)
-    role_id = Column(Integer , ForeignKey("user_roles.id"), nullable=False)
-
+   
 
 class UserFavoriteFoodInfo(Base):
     __tablename__ = 'user_favorite_food'

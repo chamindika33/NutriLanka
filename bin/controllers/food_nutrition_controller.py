@@ -1,7 +1,7 @@
 import base64
 import os
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
-from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements
+from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details
 
 class NutritionController():
     def create_food_records(self, request):
@@ -47,9 +47,9 @@ class NutritionController():
             print(f"An error occurred: {str(e)}")
             return ErrorResponseModel(str(e), 400)
         
-    def get_food_nutrition_info(self, size, name):
+    def get_food_nutrition_info(self, request):
         try:
-            food_result = get_food_info(name)
+            food_result = get_food_info(request.food_id)
             print('food result -->', food_result)
 
             if food_result:
@@ -58,14 +58,22 @@ class NutritionController():
 
                 food_result = {k: v for k, v in food_result.items() if not k.startswith('_')}   
 
-                # Scale nutritional values based on size (default values are for 100g)
-                if size and size > 0:
+                if request.unit_id == 0:
+                    # Scale nutritional values based on size (default values are for 100g)
+                    size = 100 * request.no_of_unit
+                  
+                else:
+                    data = get_food_measurement_details(request.food_id,request.unit_id)
+                    size = data.weight_in_grams * request.no_of_unit
+
+                if request.no_of_units > 0:
                     scale_factor = size / 100
                     for key, value in food_result.items():
                         if isinstance(value, (float, int)):  # Only scale numerical values
                             food_result[key] = round(value * scale_factor, 2)
 
                 return ResponseModel(food_result, "Successfully retrieved the data")
+            
             else:
                 return ResponseModel(food_result, "No data found")
 

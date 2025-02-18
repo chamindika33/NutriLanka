@@ -43,3 +43,9 @@ class FoodMeasurements(BaseModel):
    food_id : int
    unit_id : int
    weight_in_grams : float
+
+
+class FoodMeasurementsFilter(BaseModel):
+   food_id : int
+   unit_id : int
+   no_of_units : int
