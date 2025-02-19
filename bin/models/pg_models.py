@@ -94,12 +94,21 @@ class FoodMeasurement(Base):
 NutritionInfo.measurements = relationship("FoodMeasurement", back_populates="food", cascade="all, delete-orphan")
 FoodUnit.measurements = relationship("FoodMeasurement", back_populates="unit", cascade="all, delete-orphan")
 
-class UserRole(Timestamp, Base):
+class UserRole(Base,Timestamp):
     __tablename__ = "user_roles"
 
     id = Column(Integer , primary_key=True, index=True)
     role_name = Column(String(50), nullable=False)
 
+class UserDietaryGoal(Base,Timestamp):
+    __tablename__ = "user_dietary_gole"
+
+    gole_id = Column(Integer , primary_key=True, index=True)
+    user_id = Column(UUID, ForeignKey('user.id')) 
+    target_nutrient = Column(String, index=True,nullable=False)
+    target_value = Column(Float, index=True,nullable=False)
+    is_achieved = Column(Boolean, nullable=False, default=False)
+    
 
    
 Base.metadata.create_all(bind=engine)

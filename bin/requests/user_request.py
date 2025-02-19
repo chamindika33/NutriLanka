@@ -41,3 +41,8 @@ class UserLoginRequest(BaseModel):
 class AddFavoriteItem(BaseModel):
     user_id : str
     food_ids : List[int]
+
+class SetDieatGoals(BaseModel):
+    user_id : str
+    target_nutrient : str
+    target_value : float

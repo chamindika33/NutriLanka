@@ -120,5 +120,31 @@ class NutritionController():
             return ErrorResponseModel(str(e),400)
 
 
+    def get_food_nutrition_list(self):
+        try:
+            nutrition_list = [
+               'calories',
+               'protein',
+               'carbohydrates',
+               'water',
+               'fat',
+               'vitamins',
+               'fiber',
+               'calcium',
+               'magnesium',
+               'phosphorus',
+               'sodium',
+               'potassium',
+               'iron',
+               'zinc',
+               'selenium',
+               'copper',
+               'manganese'
+           ]
+
+            return ResponseModel(nutrition_list, "get all nutrition list")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
 
 nutritionController = NutritionController()

@@ -2,7 +2,7 @@
 from fastapi import HTTPException
 from bin.response.response_model import ResponseModel,ErrorResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
-from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list
+from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal
 from bin.services.jwt_auth import create_token
 
 class UserManager():
@@ -104,8 +104,17 @@ class UserManager():
         
         except Exception as e:
             raise e
-    
+        
+    def set_user_dietary_goal(self,request):
+        try:
+            insert_user_dietary_goal(request)
 
+            return ResponseModel(request, "Successfully set the dietary goal")
+    
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
 
 
 userManager = UserManager()

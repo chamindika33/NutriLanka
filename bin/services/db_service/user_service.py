@@ -80,3 +80,21 @@ def get_food_list(user_id):
     except SQLAlchemyError as e:
         db.rollback()
         return ErrorResponseModel(str(e), 404)
+
+def insert_user_dietary_goal(request):
+    try:
+        data = pg_models.UserDietaryGoal(
+                user_id = request.user_id,
+                target_nutrient = request.target_nutrient,
+                target_value = request.target_value
+
+        )
+        db.add(data)
+        db.commit()
+        db.refresh(data)
+        return data
+
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)

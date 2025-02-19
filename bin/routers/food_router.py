@@ -34,3 +34,7 @@ def get_all_food_records(request:AllFoodData):
 @router.delete("/remove-food-records")
 def remove_food_records(request:DeleteFoodData):
     return nutritionController.delete_food_records(request)
+
+@router.get("/get-nutrition-list")
+def get_nutrition_list():
+    return nutritionController.get_food_nutrition_list()
