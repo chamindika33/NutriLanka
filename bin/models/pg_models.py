@@ -101,12 +101,16 @@ class UserRole(Base,Timestamp):
     role_name = Column(String(50), nullable=False)
 
 class UserDietaryGoal(Base,Timestamp):
-    __tablename__ = "user_dietary_gole"
+    __tablename__ = "user_dietary_goal"
 
     gole_id = Column(Integer , primary_key=True, index=True)
     user_id = Column(UUID, ForeignKey('user.id')) 
     target_nutrient = Column(String, index=True,nullable=False)
     target_value = Column(Float, index=True,nullable=False)
+    breakfast_burn = Column(Float, index=True,nullable=True)
+    lunch_burn = Column(Float, index=True,nullable=True)
+    dinner_burn = Column(Float, index=True,nullable=True)
+    intermediate_burn = Column(Float, index=True,nullable=True)
     is_achieved = Column(Boolean, nullable=False, default=False)
     
 

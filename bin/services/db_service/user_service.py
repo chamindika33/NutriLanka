@@ -1,9 +1,10 @@
 from bin.db.postgresDB import db_connection
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import delete,update,exists
+from sqlalchemy import delete,update,exists,func
 from bin.models import pg_models
 from sqlalchemy.exc import SQLAlchemyError
 from bin.response.response_model import ErrorResponseModel
+from datetime import datetime, timezone
 
 db: Session = next(db_connection())
 
@@ -94,6 +95,46 @@ def insert_user_dietary_goal(request):
         db.refresh(data)
         return data
 
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)
+    
+def update_user_dietary_values(request):
+    try:
+        today_date = datetime.now(timezone.utc).date()
+        update_query = update(pg_models.UserDietaryGoal).where(
+                        (pg_models.UserDietaryGoal.user_id == request.user_id) &
+                        (func.date(pg_models.UserDietaryGoal.created_at) == today_date ) 
+                    ).values(
+                        breakfast_burn = request.breakfast,
+                        lunch_burn = request.lunch,
+                        dinner_burn = request.dinner,
+                        intermediate_burn = request.intermediate
+
+                    )
+        result = db.execute(update_query)
+        db.commit()
+
+        rows_upadted = result.rowcount
+        print("rows",rows_upadted)
+        return rows_upadted
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)
+    
+def get_user_dieatary_limit(user_id):
+    try:
+        today_date = datetime.now(timezone.utc).date()
+        data = db.query(pg_models.UserDietaryGoal).filter(
+                (pg_models.UserDietaryGoal.user_id == user_id) &
+                (func.date(pg_models.UserDietaryGoal.created_at) == today_date )
+            ).first()
+        
+        print('data-->',data)
+        
+        return data
 
     except SQLAlchemyError as e:
         db.rollback()

@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query,Depends
 from fastapi.exceptions import HTTPException
-from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals
+from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit
 from bin.middleware.user_middleware import Authorization
 from bin.services.custom_validations import check_user_email
 from bin.controllers.user_controller import userManager
@@ -30,5 +30,13 @@ def get_user_favourite_list(user_id:str, authentication=Depends(Authorization())
     return userManager.get_user_favourite_food_list(user_id,auth=authentication)
 
 @router.post('/set-dieatary-goal')
-def set_dieatary_goal(request:SetDieatGoals, authentication=Depends(Authorization())):
-    return userManager.set_user_dietary_goal(request, auth=authentication)
+def set_dieatary_goal(request:SetDieatGoals,authentication=Depends(Authorization())):
+    return userManager.set_user_dietary_goal(request,auth=authentication)
+
+@router.put('/update-daily-limit')
+def update_daily_limit(request:SetDailyLimit,authentication=Depends(Authorization())):
+    return userManager.update_user_daily_limit(request,auth=authentication)
+
+@router.get('/get-user-daily-limit')
+def get_user_daily_limit(user_id:str):
+    return userManager.get_user_daily_dieatary_limit(user_id)

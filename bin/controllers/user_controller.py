@@ -1,8 +1,7 @@
-
 from fastapi import HTTPException
 from bin.response.response_model import ResponseModel,ErrorResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
-from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal
+from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit
 from bin.services.jwt_auth import create_token
 
 class UserManager():
@@ -115,6 +114,30 @@ class UserManager():
             print(f"An error occurred: {str(e)}")
             return ErrorResponseModel(str(e),400)
         
+    def update_user_daily_limit(self,request):
+        try:
+            update_user_dietary_values(request)
+
+            return ResponseModel(request, "update user dietary goal")
+
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
+    def get_user_daily_dieatary_limit(self,user_id):
+        try:
+            result = get_user_dieatary_limit(user_id)
+            print(result)
+            total_burn_value = result.breakfast_burn + result.lunch_burn + result.dinner_burn + result.intermediate_burn
+            result_dict = {column.name: getattr(result, column.name) for column in result.__table__.columns}
+            result_dict['total_burn_value'] = total_burn_value
+            return ResponseModel(result_dict, "get user daily dietary goal")
+
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
 
 
 userManager = UserManager()

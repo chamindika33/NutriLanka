@@ -46,3 +46,10 @@ class SetDieatGoals(BaseModel):
     user_id : str
     target_nutrient : str
     target_value : float
+
+class SetDailyLimit(BaseModel):
+    user_id : str
+    breakfast : float
+    lunch : float
+    dinner : float
+    intermediate : float
