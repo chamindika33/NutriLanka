@@ -211,3 +211,14 @@ def get_food_measurement_details(food_id,unit_id):
     except SQLAlchemyError as e:
         db.rollback()
         raise ErrorResponseModel(str(e), 404)
+    
+def get_all_food_measurement():
+    try:
+        data = db.query(
+            pg_models.FoodUnit
+        ).order_by(pg_models.FoodUnit.unit_id.asc()).all()
+  
+        return data
+
+    except SQLAlchemyError as e:
+        raise ErrorResponseModel(str(e), 404)

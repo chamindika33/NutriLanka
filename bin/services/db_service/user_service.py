@@ -25,7 +25,8 @@ async def create_new_user(user):
             bmi_value = user["bmi_value"],
             email_verified = user["email_verified"],
             dietary_preferences = user["dietary_preferences"],
-            status = user["status"]
+            status = user["status"],
+            role_id = user["role_id"]
            
         )
         db.add(data)

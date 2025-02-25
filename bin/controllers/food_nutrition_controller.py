@@ -1,7 +1,8 @@
 import base64
 import os
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
-from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details
+from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement
+
 
 class NutritionController():
     def create_food_records(self, request):
@@ -146,5 +147,14 @@ class NutritionController():
         except Exception as e:
             print(f"An error occurred: {str(e)}")
             return ErrorResponseModel(str(e),400)
+        
+    def get_measurement_list(self):
+        try:
+            result = get_all_food_measurement()
+            return ResponseModel(result, "get all food measurement list")
 
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
 nutritionController = NutritionController()

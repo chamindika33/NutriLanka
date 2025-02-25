@@ -23,7 +23,7 @@ class UserManager():
                 "email_verified" : True,
                 "status" : True,
                 "dietary_preferences" : request.dieatary_preferences,
-                "role_id" : 2
+                "role_id" : request.role_id
 
             }
                     
@@ -32,7 +32,7 @@ class UserManager():
         
         except Exception as e:
             print(f"An error occurred: {str(e)}")
-
+            return ErrorResponseModel(str(e),400)
 
     def sign_in(self,request):
         try:

@@ -38,3 +38,7 @@ def remove_food_records(request:DeleteFoodData):
 @router.get("/get-nutrition-list")
 def get_nutrition_list():
     return nutritionController.get_food_nutrition_list()
+
+@router.get("/get-food-measurement-list")
+def get_food_measurement_list():
+    return nutritionController.get_measurement_list()

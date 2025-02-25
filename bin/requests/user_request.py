@@ -15,6 +15,7 @@ class NewUser(BaseModel):
     height:int #should be in cm
     weight:int
     dieatary_preferences:str
+    role_id: int
     
 
 

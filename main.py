@@ -12,7 +12,7 @@ import uvicorn
 
 
 app = FastAPI(
-    title="Halo Connect - Merchant Manager",
+    title="NutriLanka",
     contact={
         "name": "chamindika Kodithuwakku",
         "email": "chamindika1996@gmail.com",
@@ -22,7 +22,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000"],  # Frontend URL
+    allow_origins=["*"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all HTTP headers
