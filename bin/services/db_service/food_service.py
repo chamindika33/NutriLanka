@@ -1,6 +1,6 @@
 from bin.db.postgresDB import db_connection
 from collections import OrderedDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import delete,update
 from bin.models import pg_models
 from sqlalchemy.exc import SQLAlchemyError
@@ -222,3 +222,38 @@ def get_all_food_measurement():
 
     except SQLAlchemyError as e:
         raise ErrorResponseModel(str(e), 404)
+    
+def get_all_food_measurements_for_food(food_id):
+    try:
+        data = db.query(
+            pg_models.FoodMeasurement,
+            pg_models.FoodUnit
+        ).filter(
+            pg_models.FoodMeasurement.food_id == food_id
+        ).join(
+            pg_models.FoodUnit,
+            (pg_models.FoodMeasurement.unit_id) == (pg_models.FoodUnit.unit_id)
+        ).all()
+
+        return data
+
+    except SQLAlchemyError as e:
+        raise ErrorResponseModel(str(e), 404)
+    
+def delete_food_measurements_for_food(food_id,unit_id):
+    try:
+        delete_query = delete(pg_models.FoodMeasurement).where(
+            (pg_models.FoodMeasurement.food_id == food_id) &
+            (pg_models.FoodMeasurement.unit_id == unit_id)
+        )
+
+        result = db.execute(delete_query)
+        db.commit()
+
+        rows_deleted = result.rowcount
+        return rows_deleted
+    
+    except SQLAlchemyError as e:
+        print(str(e))
+        db.rollback()
+        return 0

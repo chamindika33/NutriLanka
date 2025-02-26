@@ -1,7 +1,7 @@
 import base64
 import os
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
-from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement
+from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food
 
 
 class NutritionController():
@@ -152,6 +152,34 @@ class NutritionController():
         try:
             result = get_all_food_measurement()
             return ResponseModel(result, "get all food measurement list")
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
+    def get_specific_food_measurements(self,food_id):
+        try:
+            result = get_all_food_measurements_for_food(food_id)
+            print('result-->',result)
+            food_list = []
+            if result:
+                for food_measurement, food_unit in result:
+                    food_list.append({
+                        "unit_id":food_unit.unit_id,
+                        "unit_name": food_unit.unit_name,
+                        "weight_in_grams": food_measurement.weight_in_grams
+
+                    })
+            return ResponseModel(food_list, "get all food measurements")
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
+    def delete_food_measurements(self,food_id,unit_id):
+        try:
+            result = delete_food_measurements_for_food(food_id,unit_id)
+            return ResponseModel(result, "delete food measurements")
 
         except Exception as e:
             print(f"An error occurred: {str(e)}")

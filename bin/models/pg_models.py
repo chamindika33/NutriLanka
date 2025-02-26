@@ -79,6 +79,8 @@ class FoodUnit(Base):
     unit_name = Column(String, index=True)
     unit_in_grams = Column(Float, index=True,nullable=True)
 
+
+
 class FoodMeasurement(Base):
     __tablename__ = 'food_measurement'
 
@@ -90,9 +92,6 @@ class FoodMeasurement(Base):
     # Relationships
     food = relationship("NutritionInfo", back_populates="measurements")
     unit = relationship("FoodUnit", back_populates="measurements")
-
-NutritionInfo.measurements = relationship("FoodMeasurement", back_populates="food", cascade="all, delete-orphan")
-FoodUnit.measurements = relationship("FoodMeasurement", back_populates="unit", cascade="all, delete-orphan")
 
 class UserRole(Base,Timestamp):
     __tablename__ = "user_roles"
@@ -112,8 +111,10 @@ class UserDietaryGoal(Base,Timestamp):
     dinner_burn = Column(Float, index=True,nullable=True)
     intermediate_burn = Column(Float, index=True,nullable=True)
     is_achieved = Column(Boolean, nullable=False, default=False)
-    
 
-   
+
+NutritionInfo.measurements = relationship("FoodMeasurement", back_populates="food", cascade="all, delete-orphan")
+FoodUnit.measurements = relationship("FoodMeasurement", back_populates="unit", cascade="all, delete-orphan")
+  
 Base.metadata.create_all(bind=engine)
 print("All tables created successfully.")

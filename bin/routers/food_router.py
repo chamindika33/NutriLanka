@@ -42,3 +42,11 @@ def get_nutrition_list():
 @router.get("/get-food-measurement-list")
 def get_food_measurement_list():
     return nutritionController.get_measurement_list()
+
+@router.get("/get-food-measurement-details")
+def get_food_measurement_details(food_id : int):
+    return nutritionController.get_specific_food_measurements(food_id)
+
+@router.put("/delete-food-measurement")
+def delete_specific_food_measurement(food_id : int, unit_id :int):
+    return nutritionController.delete_food_measurements(food_id,unit_id)

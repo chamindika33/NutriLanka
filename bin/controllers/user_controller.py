@@ -37,6 +37,7 @@ class UserManager():
     def sign_in(self,request):
         try:
             user = validate_user(request.username)
+            print('user-->',user)
         
             if user:
                 if verify_password(pw=request.password, hash_pw=user.password):
