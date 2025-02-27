@@ -131,9 +131,32 @@ class UserManager():
             result = get_user_dieatary_limit(user_id)
             print(result)
             if result:
-                total_burn_value = result.breakfast_burn + result.lunch_burn + result.dinner_burn + result.intermediate_burn
-                result_dict = {column.name: getattr(result, column.name) for column in result.__table__.columns}
-                result_dict['total_burn_value'] = total_burn_value
+                def safe_float(value):
+                    print(value)
+                    if value == None:
+                        return 0
+                    return float(value)
+                
+                total_burn_value =  safe_float(result.breakfast_burn) + safe_float(result.lunch_burn) + safe_float(result.dinner_burn) + safe_float(result.intermediate_burn)
+                                    
+                result_dict = {
+                    column.name: (getattr(result, column.name) if getattr(result, column.name) is not None else 0)
+                    for column in result.__table__.columns
+                }
+
+                print(result_dict)
+                result_dict['total_burn_value'] = total_burn_value        
+                result_dict['target_value'] = result.target_value
+                remain_value = abs(total_burn_value - result_dict['target_value'])
+
+                result_dict['remaining_values'] = remain_value
+                if remain_value == 0 :
+                    result_dict['achievements'] = 'Goal Achieved'
+                elif remain_value > 0 :
+                    result_dict['achievements'] = 'Under Achieved'
+                else:
+                    result_dict['achievements'] = 'Over Achieved'
+
                 return ResponseModel(result_dict, "get user daily dietary goal")
             else:
                 return ErrorResponseModel('No data found',404)

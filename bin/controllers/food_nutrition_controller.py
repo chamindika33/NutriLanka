@@ -159,10 +159,18 @@ class NutritionController():
             result = get_all_food_measurements_for_food(food_id)
             print('result-->',result)
             food_list = []
+            # food_list.append({
+            #         "unit_id":7,
+            #         "unit": 'g',
+            #         "unit_name": 'gram',
+            #         "weight_in_grams": 1
+
+            #     })
             if result:
                 for food_measurement, food_unit in result:
                     food_list.append({
                         "unit_id":food_unit.unit_id,
+                        "unit": food_unit.unit,
                         "unit_name": food_unit.unit_name,
                         "weight_in_grams": food_measurement.weight_in_grams
 
