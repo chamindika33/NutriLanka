@@ -59,13 +59,13 @@ class NutritionController():
 
                 food_result = {k: v for k, v in food_result.items() if not k.startswith('_')}   
 
-                if request.unit_id == 0:
+                if request.unit_id == 7:
                     # Scale nutritional values based on size (default values are for 100g)
-                    size = 100 * request.no_of_unit
+                    size = request.no_of_units
                   
                 else:
                     data = get_food_measurement_details(request.food_id,request.unit_id)
-                    size = data.weight_in_grams * request.no_of_unit
+                    size = data.weight_in_grams * request.no_of_units
 
                 if request.no_of_units > 0:
                     scale_factor = size / 100
@@ -84,14 +84,11 @@ class NutritionController():
 
         
     def filter_food(self,request):
-        try:
-            result = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
-            print('result--->',result)
-            return ResponseModel(result,"reterived data")
 
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")
-            return ErrorResponseModel(str(e),400)
+        result = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
+        print('result--->',result)
+        return ResponseModel(result,"reterived data")
+
         
     def get_all_food_details(self,request):
         try:

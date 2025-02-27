@@ -1,4 +1,5 @@
 from bin.db.postgresDB import db_connection
+from fastapi import HTTPException
 from collections import OrderedDict
 from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import delete,update
@@ -66,7 +67,7 @@ def get_filter_data(filter_by,filter_pass,filter_name):
                 ).first()
             
             if not result:
-                return {"error": "No nutrition data found"}
+                raise HTTPException(status_code=404, detail="Nutrition data not found")
             
             result2= db.query(
                     pg_models.FoodMeasurement

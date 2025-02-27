@@ -18,7 +18,7 @@ def add_food_measurement(request:FoodMeasurements):
    return nutritionController.add_food_measuremnts_to_food(request)
     
 
-@router.get("/get-food-nutrition-info")
+@router.post("/get-food-nutrition-info")
 def get_food_nutrition_info(request:FoodMeasurementsFilter):
     return nutritionController.get_food_nutrition_info(request)
 

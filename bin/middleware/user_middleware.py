@@ -15,10 +15,11 @@ JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
 exp = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
-def get_audience():
-    user_roles = db.query(UserRole.id).all()
-    audiens = [role.id for role in user_roles]
-    yield audiens
+# def get_audience():
+#     # user_roles = db.query(UserRole.id).all()
+#     # audiens = [role.id for role in user_roles]
+#     audiens = user.role_id
+#     yield audiens
 
 class Authorization(HTTPBearer):
     def __init__(self, auto_error: bool = False):
@@ -29,11 +30,11 @@ class Authorization(HTTPBearer):
         bearer: HTTPAuthorizationCredentials = await super(Authorization, self).__call__(request)
         if bearer:
             try:
-                audience = next(get_audience())
+                # audience = next(get_audience())
                 decode = jwt.decode(bearer.credentials,
                                     JWT_SECRET,
-                                    algorithms=JWT_ALGORITHM,
-                                    audience=audience
+                                    algorithms=JWT_ALGORITHM
+                                    # audience=audience
                                     )
                 tuples = namedtuple("auth", decode.keys())(*decode.values())
             

@@ -23,20 +23,20 @@ def sign_in_user(request: UserLoginRequest):
 
 @router.post('/add-food-to-favorite-list')
 def add_food_to_favorite_list(request:AddFavoriteItem, authentication=Depends(Authorization())):
-    return userManager.add_food_record_to_favorite_list(request,auth=authentication)
+    return userManager.add_food_record_to_favorite_list(request,authentication)
 
 @router.get('/get-user-favourite-list')
 def get_user_favourite_list(user_id:str, authentication=Depends(Authorization())):
-    return userManager.get_user_favourite_food_list(user_id,auth=authentication)
+    return userManager.get_user_favourite_food_list(user_id,authentication)
 
 @router.post('/set-dieatary-goal')
 def set_dieatary_goal(request:SetDieatGoals,authentication=Depends(Authorization())):
-    return userManager.set_user_dietary_goal(request,auth=authentication)
+    return userManager.set_user_dietary_goal(request,authentication)
 
 @router.put('/update-daily-limit')
 def update_daily_limit(request:SetDailyLimit,authentication=Depends(Authorization())):
-    return userManager.update_user_daily_limit(request,auth=authentication)
+    return userManager.update_user_daily_limit(request,authentication)
 
 @router.get('/get-user-daily-limit')
-def get_user_daily_limit(user_id:str):
-    return userManager.get_user_daily_dieatary_limit(user_id)
+def get_user_daily_limit(user_id:str,authentication=Depends(Authorization())):
+    return userManager.get_user_daily_dieatary_limit(user_id,authentication)

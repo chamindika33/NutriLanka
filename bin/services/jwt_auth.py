@@ -13,16 +13,17 @@ key = os.getenv('JWT_SECRET_KEY')
 
 
 def create_token(user):
-    user_roles = db.query(UserRole.id).all()
-    audiens = [role.id for role in user_roles]
+    # user_roles = db.query(UserRole.id).all()
+    # audiens = [role.id for role in user_roles]
+    # audiens = user.role_id
 
     current_time = datetime.now(tz=timezone.utc)
     payload_data = {
         "iat": current_time,
         "nbf": current_time,
         "exp": current_time + timedelta(minutes=exp),
-        "sub": str(user.id),
-        "aud": audiens
+        "sub": str(user.id)
+        # "aud": audiens
     }
 
     token = jwt.encode(
