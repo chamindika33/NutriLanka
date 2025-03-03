@@ -140,3 +140,4 @@ def get_user_dieatary_limit(user_id):
     except SQLAlchemyError as e:
         db.rollback()
         return ErrorResponseModel(str(e), 404)
+    

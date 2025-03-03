@@ -19,11 +19,11 @@ class NutritionController():
 
             image_data = base64.b64decode(base64_data) # Decode the base64 data
 
-            file_dir = os.path.join(os.getcwd(), 'bin', 'images', 'food_images')  # Absolute path to the images directory
+            file_dir = os.path.join(os.getcwd(), 'public', 'images', 'avatars')  # Absolute path to the images directory
             os.makedirs(file_dir, exist_ok=True)  # Create the directory if it doesn't exist
 
             img_name = request.food_name
-            file_path = os.path.join(file_dir, f"{img_name}.jpg")  
+            file_path = f"{img_name}.jpg"  
             with open(file_path, "wb") as f:
                 f.write(image_data)
 

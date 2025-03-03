@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query,Depends
 from fastapi.exceptions import HTTPException
-from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit
+from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit,AvatarUpdateRequest
 from bin.middleware.user_middleware import Authorization
 from bin.services.custom_validations import check_user_email
 from bin.controllers.user_controller import userManager
@@ -40,3 +40,15 @@ def update_daily_limit(request:SetDailyLimit,authentication=Depends(Authorizatio
 @router.get('/get-user-daily-limit')
 def get_user_daily_limit(user_id:str,authentication=Depends(Authorization())):
     return userManager.get_user_daily_dieatary_limit(user_id,authentication)
+
+@router.get('/get-user-daily-limit')
+def get_user_daily_limit(user_id:str,authentication=Depends(Authorization())):
+    return userManager.get_user_daily_dieatary_limit(user_id,authentication)
+
+@router.put('/image')
+async def update_profile_image(request: AvatarUpdateRequest, authentication=Depends(Authorization())):
+    return userManager.update_user_img(request=request, auth=authentication)
+
+@router.get('/image')
+async def get_profile_image(authentication=Depends(Authorization())):
+    return userManager.get_user_img(auth=authentication)

@@ -54,3 +54,6 @@ class SetDailyLimit(BaseModel):
     lunch : float
     dinner : float
     intermediate : float
+
+class AvatarUpdateRequest(BaseModel):
+    base64_image: str
