@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query,Depends
 from fastapi.exceptions import HTTPException
-from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit,AvatarUpdateRequest
+from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit,AvatarUpdateRequest,AddCustomRecipe
 from bin.middleware.user_middleware import Authorization
 from bin.services.custom_validations import check_user_email
 from bin.controllers.user_controller import userManager
@@ -41,10 +41,6 @@ def update_daily_limit(request:SetDailyLimit,authentication=Depends(Authorizatio
 def get_user_daily_limit(user_id:str,authentication=Depends(Authorization())):
     return userManager.get_user_daily_dieatary_limit(user_id,authentication)
 
-@router.get('/get-user-daily-limit')
-def get_user_daily_limit(user_id:str,authentication=Depends(Authorization())):
-    return userManager.get_user_daily_dieatary_limit(user_id,authentication)
-
 @router.put('/image')
 async def update_profile_image(request: AvatarUpdateRequest, authentication=Depends(Authorization())):
     return userManager.update_user_img(request=request, auth=authentication)
@@ -52,3 +48,11 @@ async def update_profile_image(request: AvatarUpdateRequest, authentication=Depe
 @router.get('/image')
 async def get_profile_image(authentication=Depends(Authorization())):
     return userManager.get_user_img(auth=authentication)
+
+@router.post('/add-custom-recipes')
+def add_custom_recipes(request:AddCustomRecipe, authentication=Depends(Authorization())):
+    return userManager.add_user_custom_recipe(request,authentication)
+
+@router.get('/get-user-custom-recipes')
+async def get_user_custom_recipes(authentication=Depends(Authorization())):
+    return userManager.get_custom_recipe(auth=authentication)

@@ -3,11 +3,8 @@ import uuid
 from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, DateTime, func, ForeignKey
-from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, Numeric, func , Integer,Float,Boolean
+from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, func , Integer,Float,Boolean
 from bin.db.postgresDB import Base,engine
-from sqlalchemy.orm import column_property
-
-
 
 class Timestamp:
     created_at = Column(DateTime, default=func.now())  
@@ -112,9 +109,33 @@ class UserDietaryGoal(Base,Timestamp):
     intermediate_burn = Column(Float, index=True,nullable=True)
     is_achieved = Column(Boolean, nullable=False, default=False)
 
+class CustomRecipesInfo(Base):
+    __tablename__ = 'custom_recipes_info'
+
+    record_id = Column(Integer, primary_key=True, index=True)
+    food_name = Column(String, index=True)
+    description = Column(String, index=True)
+    weight = Column(Float, index=True)
+    food_measurement = Column(String, index=True)
+    calories = Column(Float, index=True)
+    protein = Column(Float, index=True)
+    carbohydrates= Column(Float, index=True)
+    water= Column(Float, index=True)
+    fat= Column(Float, index=True)
+    vitamins= Column(Float, index=True)
+    fiber= Column(Float, index=True)
+    calcium= Column(Float, index=True)
+    sodium= Column(Float, index=True)
+    iron= Column(Float, index=True)
+    potassium= Column(Float, index=True)
+    food_img = Column(String, index=True)
+    user_id = Column(UUID, index=True)
+
+    # custom = relationship("User", backref="user")
 
 NutritionInfo.measurements = relationship("FoodMeasurement", back_populates="food", cascade="all, delete-orphan")
 FoodUnit.measurements = relationship("FoodMeasurement", back_populates="unit", cascade="all, delete-orphan")
+# User.user = relationship("User", back_populates="custom", cascade="all, delete-orphan")
   
 Base.metadata.create_all(bind=engine)
 print("All tables created successfully.")

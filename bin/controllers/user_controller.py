@@ -9,6 +9,7 @@ from mimetypes import guess_extension
 from bin.response.response_model import ResponseModel,ErrorResponseModel,FalseResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
 from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit
+from bin.services.db_service.custom_food_service import create_new_custom_food_record,get_user_custom_food_list
 from bin.services.jwt_auth import create_token
 from fastapi.security import HTTPAuthorizationCredentials
 from bin.db.postgresDB import db_connection
@@ -64,7 +65,7 @@ class UserManager():
                         "result": {
                             "id": user.id,
                             "name": user.name,
-                            "user_img": user.user_img,
+                            "user_img": f"{avatar_path}/{user.user_img}",
                             "email_address": user.email,
                             "date_of_birth": user.date_of_birth,
                             "gender": user.gender,
@@ -246,5 +247,60 @@ class UserManager():
                     "status": True,
                     "result": str(e)
                 })
+        
+    def add_user_custom_recipe(self,request,auth: HTTPAuthorizationCredentials):
+        try: 
+            print('type of image -',type(request.food_img))
+            # Validate and parse the base64 data
+            if not request.food_img or not isinstance(request.food_img, str):
+                raise ValueError("Invalid or missing 'food_img' field in the request.")
 
+            if "base64," not in request.food_img:
+                raise ValueError("The 'food_img' field is not a valid base64-encoded image.")
+
+            base64_data = request.food_img.split(",")[1] # Extract base64 image data after the comma
+
+            image_data = base64.b64decode(base64_data) # Decode the base64 data
+
+            file_dir = os.path.join(os.getcwd(), 'public', 'images', 'avatars')
+
+            # Ensure the directory exists
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir, exist_ok=True)  # Creates the directory if it doesn't exist
+
+            img_name = f"{request.food_name}.jpg"  # Construct the image filename
+            file_path = os.path.join(file_dir, img_name)  # Full file path
+
+            # Save the image
+            with open(file_path, "wb") as f:
+                f.write(image_data)
+
+            create_new_custom_food_record(request, img_name)
+            return ResponseModel(request, "Successfully added food record")
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
+    def get_custom_recipe(self,auth: HTTPAuthorizationCredentials):
+        try:
+            user = db.query(pg_models.User).get(auth.sub)
+            food_list = get_user_custom_food_list(user.id)
+            print('food list-->',food_list)
+            fav_list = [
+                    {
+                        **fav.__dict__,
+                       
+                        "food_img":  f"{avatar_path}/{fav.food_img}"
+                    }
+                    for fav in food_list
+                ]
+
+            return ResponseModel(fav_list, "Favorite food records retrieved successfully.")
+        
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
 userManager = UserManager()

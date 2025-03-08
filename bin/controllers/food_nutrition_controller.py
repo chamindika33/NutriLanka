@@ -3,6 +3,7 @@ import os
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
 from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food
 
+avatar_path = os.getenv("AVATAR_PATH")
 
 class NutritionController():
     def create_food_records(self, request):
@@ -20,15 +21,18 @@ class NutritionController():
             image_data = base64.b64decode(base64_data) # Decode the base64 data
 
             file_dir = os.path.join(os.getcwd(), 'public', 'images', 'avatars')  # Absolute path to the images directory
-            os.makedirs(file_dir, exist_ok=True)  # Create the directory if it doesn't exist
+            # Ensure the directory exists
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir, exist_ok=True)  # Create the directory if it doesn't exist
 
-            img_name = request.food_name
-            file_path = f"{img_name}.jpg"  
+            img_name = f"{request.food_name}.jpg"  # Construct the image filename
+            file_path = os.path.join(file_dir, img_name)  # Full file path 
+
             with open(file_path, "wb") as f:
                 f.write(image_data)
 
             print(f"Image successfully saved at: {file_path}")
-            create_new_food_record(request, file_path)
+            create_new_food_record(request, img_name)
             return ResponseModel(request, "Successfully added food record")
 
         except (ValueError, base64.binascii.Error) as e:
@@ -58,6 +62,10 @@ class NutritionController():
                     food_result = food_result.__dict__
 
                 food_result = {k: v for k, v in food_result.items() if not k.startswith('_')}   
+
+                if (food_result.get("food_img")) and (food_result.get("food_img") is not None):
+                    image_url = food_result.get("food_img")
+                    food_result["food_img"] = f"{avatar_path}/{image_url}"
 
                 if request.unit_id == 7:
                     # Scale nutritional values based on size (default values are for 100g)
@@ -95,8 +103,15 @@ class NutritionController():
             offset = (request.page_number-1) * request.record_per_page
             print('offset-->', offset)
             data = get_all_food_info(offset,request.record_per_page)
+            food_info = [
+                {
+                    **fav.__dict__,
+                    "food_img": f"{avatar_path}/{fav.food_img}"
+                }
+                for fav in data['data']
+            ]
             result ={
-                'data': data['data'],
+                'data': food_info,
                 'page_number': request.page_number,
                 'record_per_page': request.record_per_page,
                 'No of records': data['total_records']
