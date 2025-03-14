@@ -1,7 +1,7 @@
 import base64
 import os
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
-from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food
+from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food,update_existing_food_record
 
 avatar_path = os.getenv("AVATAR_PATH")
 
@@ -93,9 +93,15 @@ class NutritionController():
         
     def filter_food(self,request):
 
-        result = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
-        print('result--->',result)
-        return ResponseModel(result,"reterived data")
+        data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
+        print('result--->',data['nutrition_data'])
+        fav = data['nutrition_data']
+        
+        if hasattr(fav,"__dict__"):
+            fav_dict = fav.__dict__.copy()
+            fav_dict['food_img'] = f"{avatar_path}/{fav.food_img}" if hasattr(fav, "food_img") else None
+            data["nutrition_data"] = fav_dict
+        return ResponseModel(data,"reterived data")
 
         
     def get_all_food_details(self,request):
@@ -204,5 +210,43 @@ class NutritionController():
         except Exception as e:
             print(f"An error occurred: {str(e)}")
             return ErrorResponseModel(str(e),400)
+        
+
+    def update_existing_food(self, request,food_id):
+        try:
+            print('type of image -',type(request.food_img))
+            # Validate and parse the base64 data
+            if not request.food_img or not isinstance(request.food_img, str):
+                raise ValueError("Invalid or missing 'food_img' field in the request.")
+
+            if "base64," not in request.food_img:
+                raise ValueError("The 'food_img' field is not a valid base64-encoded image.")
+
+            base64_data = request.food_img.split(",")[1] # Extract base64 image data after the comma
+
+            image_data = base64.b64decode(base64_data) # Decode the base64 data
+
+            file_dir = os.path.join(os.getcwd(), 'public', 'images', 'avatars')  # Absolute path to the images directory
+            # Ensure the directory exists
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+            img_name = f"{request.food_name}.jpg"  # Construct the image filename
+            file_path = os.path.join(file_dir, img_name)  # Full file path 
+
+            with open(file_path, "wb") as f:
+                f.write(image_data)
+
+            print(f"Image successfully saved at: {file_path}")
+            update_existing_food_record(request, img_name,food_id)
+            return ResponseModel(request, "Successfully added food record")
+
+        except (ValueError, base64.binascii.Error) as e:
+            print(f"Invalid image data: {str(e)}")  # Handle specific decoding or format errors
+            return ErrorResponseModel(str(e), 400)
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e), 400)
         
 nutritionController = NutritionController()

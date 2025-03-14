@@ -258,3 +258,42 @@ def delete_food_measurements_for_food(food_id,unit_id):
         print(str(e))
         db.rollback()
         return 0
+    
+def update_existing_food_record(request, img_name,food_id):
+    try:
+        update_query = update(pg_models.NutritionInfo).where(
+                        (pg_models.NutritionInfo.food_id== food_id) 
+                    ).values(
+                        food_name = request.food_name,
+                        native_name = request.native_name,
+                        description = request.description,
+                        calories = request.calories,
+                        protein = request.protein,
+                        carbohydrates= request.carbohydrates,
+                        water= request.water,
+                        fat= request.fats,
+                        vitamins= request.vitamins,
+                        fiber = request.fiber,
+                        calcium = request.calcium,
+                        magnesium = request.magnesium,
+                        phosphorus = request.phosphorus,
+                        sodium = request.sodium,
+                        potassium = request.potassium,
+                        iron = request. iron,
+                        zinc = request.zinc,
+                        selenium = request.selenium,
+                        copper = request.copper,
+                        manganese = request.manganese,
+                        food_img = img_name
+
+                    )
+        result = db.execute(update_query)
+        db.commit()
+
+        rows_upadted = result.rowcount
+        print("rows",rows_upadted)
+        return rows_upadted
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)

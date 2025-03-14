@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query
 from fastapi.exceptions import HTTPException
-from bin.requests.food_request import NewFoodRecord,FoodFilter,AllFoodData,DeleteFoodData,FoodMeasurements,FoodMeasurementsFilter
+from bin.requests.food_request import NewFoodRecord,FoodFilter,AllFoodData,DeleteFoodData,FoodMeasurements,FoodMeasurementsFilter,UpdateFoodRecord
 from bin.controllers.food_nutrition_controller import nutritionController
 
 router = APIRouter(
@@ -50,3 +50,8 @@ def get_food_measurement_details(food_id : int):
 @router.put("/delete-food-measurement")
 def delete_specific_food_measurement(food_id : int, unit_id :int):
     return nutritionController.delete_food_measurements(food_id,unit_id)
+
+@router.put("/update-food-record/{food_id}")
+def update_food_record(request:NewFoodRecord,food_id):
+    print('type of image -',type(request.food_img))
+    return nutritionController.update_existing_food(request,food_id)

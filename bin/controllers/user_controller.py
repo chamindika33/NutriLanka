@@ -114,7 +114,7 @@ class UserManager():
                         "food_name": fav.food.food_name,
                         "calories": fav.food.calories,
                         "description": fav.food.description,
-                        "food_img": fav.food.food_img
+                        "food_img": f"{avatar_path}/{fav.food.food_img}"
                     }
                     for fav in food_list
                 ]
