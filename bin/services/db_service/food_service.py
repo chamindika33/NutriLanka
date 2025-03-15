@@ -2,7 +2,7 @@ from bin.db.postgresDB import db_connection
 from fastapi import HTTPException
 from collections import OrderedDict
 from sqlalchemy.orm import Session,joinedload
-from sqlalchemy import delete,update
+from sqlalchemy import delete,update,or_
 from bin.models import pg_models
 from sqlalchemy.exc import SQLAlchemyError
 from bin.response.response_model import ErrorResponseModel
@@ -60,19 +60,25 @@ def get_food_info(food_id):
 def get_filter_data(filter_by,filter_pass,filter_name):
     try:
         if filter_by == 'food':
+            ROW_LIMIT = 10
             result = db.query(
                     pg_models.NutritionInfo
                 ).filter(
-                    pg_models.NutritionInfo.native_name == filter_name
-                ).first()
+                    or_(
+                        pg_models.NutritionInfo.native_name.ilike(filter_name),
+                        pg_models.NutritionInfo.native_name.ilike(f"{filter_name.lower()}%")
+                    )
+                    
+                ).limit(ROW_LIMIT).all()
             
             if not result:
                 raise HTTPException(status_code=404, detail="Nutrition data not found")
             
+            food_ids = [food.food_id for food in result]
             result2= db.query(
                     pg_models.FoodMeasurement
                 ).filter(
-                    pg_models.FoodMeasurement.food_id == result.food_id
+                    pg_models.FoodMeasurement.food_id.in_(food_ids)
                 ).all()
             
             if not result2:
@@ -102,8 +108,6 @@ def get_filter_data(filter_by,filter_pass,filter_name):
             measurement_data = OrderedDict()
             measurement_data[default_unit["unit_id"]] = default_unit
                 
-           
-
             for record in result2:
                 measurement_data[record.unit_id] = unit_map.get(record.unit_id, None)
 
