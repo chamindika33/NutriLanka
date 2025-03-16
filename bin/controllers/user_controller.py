@@ -8,7 +8,7 @@ import os
 from mimetypes import guess_extension
 from bin.response.response_model import ResponseModel,ErrorResponseModel,FalseResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
-from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit
+from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit,user_details
 from bin.services.db_service.custom_food_service import create_new_custom_food_record,get_user_custom_food_list
 from bin.services.jwt_auth import create_token
 from fastapi.security import HTTPAuthorizationCredentials
@@ -297,6 +297,34 @@ class UserManager():
                 ]
 
             return ResponseModel(fav_list, "Favorite food records retrieved successfully.")
+        
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+    
+    def send_user_details(self,auth: HTTPAuthorizationCredentials):
+        try:
+            user = db.query(pg_models.User).get(auth.sub)
+            user_data = user_details(user.id)
+            if not user_data:
+                return ErrorResponseModel("User not found", 404)
+
+            user_data = user.__dict__.copy()
+            user_data.pop("_sa_instance_state", None)  # Remove SQLAlchemy metadata
+
+            bmi_value = user_data.get("bmi_value", 0)
+            if bmi_value < 18.5:
+                bmi_status = "Underweight"
+            elif 18.5 <= bmi_value < 25:
+                bmi_status = "Normal weight"
+            elif 25 <= bmi_value < 30:
+                bmi_status = "Overweight"
+            else:
+                bmi_status = "Obese"
+
+            user_data["bmi_status"] = bmi_status
+            return ResponseModel(user_data, "user data retrieved successfully.")
         
 
         except Exception as e:

@@ -104,16 +104,30 @@ def insert_user_dietary_goal(request):
 def update_user_dietary_values(request):
     try:
         today_date = datetime.now(timezone.utc).date()
-        update_query = update(pg_models.UserDietaryGoal).where(
+        user_goal = db.query(pg_models.UserDietaryGoal).filter(
                         (pg_models.UserDietaryGoal.user_id == request.user_id) &
-                        (func.date(pg_models.UserDietaryGoal.created_at) == today_date ) 
-                    ).values(
-                        breakfast_burn = request.breakfast,
-                        lunch_burn = request.lunch,
-                        dinner_burn = request.dinner,
-                        intermediate_burn = request.intermediate
+                        (func.date(pg_models.UserDietaryGoal.created_at) == today_date) 
+                    ).first()
+        
+        if not user_goal:
+            return ErrorResponseModel("No record found for today's dietary goal.", 404)
+        
+        total_burn_value = (
+            request.breakfast + request.lunch + request.dinner + request.intermediate
+        )
 
-                    )
+        is_achieved = total_burn_value  >= user_goal.target_value
+
+        update_query = update(pg_models.UserDietaryGoal).where(
+            (pg_models.UserDietaryGoal.user_id == request.user_id) &
+            (func.date(pg_models.UserDietaryGoal.created_at) == today_date)
+            ).values(
+                breakfast_burn=request.breakfast,
+                lunch_burn=request.lunch,
+                dinner_burn=request.dinner,
+                intermediate_burn=request.intermediate,
+                is_achieved=is_achieved  
+            )
         result = db.execute(update_query)
         db.commit()
 
@@ -141,3 +155,17 @@ def get_user_dieatary_limit(user_id):
         db.rollback()
         return ErrorResponseModel(str(e), 404)
     
+
+def user_details(user_id):
+    try:
+        data = db.query(pg_models.User).filter(
+                (pg_models.User.id == user_id) 
+            ).first()
+        
+        print('data-->',data)
+        
+        return data
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)

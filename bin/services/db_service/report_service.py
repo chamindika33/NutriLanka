@@ -52,3 +52,26 @@ def get_all_users_dietary_list(offset,record_per_page):
     except SQLAlchemyError as e:
         db.rollback()
         return ErrorResponseModel(str(e), 404)
+    
+def get_filtered_dietary_list(offset,record_per_page,filter_feild,status):
+    try:
+        data = db.query(
+            pg_models.UserDietaryGoal
+        ).filter(
+            pg_models.UserDietaryGoal.is_achieved == status
+        ).order_by(pg_models.UserDietaryGoal.gole_id.asc())
+        data = data.offset(offset).limit(record_per_page).all()
+
+        total_records = db.query(pg_models.UserDietaryGoal).count()
+
+        result = {
+            "total_records": total_records,
+            "data": data
+        }
+
+        return result
+
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)

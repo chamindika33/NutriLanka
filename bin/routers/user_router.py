@@ -56,3 +56,7 @@ def add_custom_recipes(request:AddCustomRecipe, authentication=Depends(Authoriza
 @router.get('/get-user-custom-recipes')
 async def get_user_custom_recipes(authentication=Depends(Authorization())):
     return userManager.get_custom_recipe(auth=authentication)
+
+@router.get('/get-user-details')
+async def get_user_details(authentication=Depends(Authorization())):
+    return userManager.send_user_details(auth=authentication)
