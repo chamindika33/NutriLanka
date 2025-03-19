@@ -9,8 +9,12 @@ from mimetypes import guess_extension
 from bin.response.response_model import ResponseModel,ErrorResponseModel,FalseResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
 from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit,user_details
+from bin.services.db_service.food_service import get_food_info
 from bin.services.db_service.custom_food_service import create_new_custom_food_record,get_user_custom_food_list
 from bin.services.jwt_auth import create_token
+from bin.requests.food_request import FoodMeasurementsFilter
+from bin.requests.user_request import AddCustomRecipe
+from bin.controllers.food_nutrition_controller import nutritionController
 from fastapi.security import HTTPAuthorizationCredentials
 from bin.db.postgresDB import db_connection
 from sqlalchemy.orm import Session
@@ -313,6 +317,7 @@ class UserManager():
             user_data = user.__dict__.copy()
             user_data.pop("_sa_instance_state", None)  # Remove SQLAlchemy metadata
 
+            img = user_data.get("user_img",None)
             bmi_value = user_data.get("bmi_value", 0)
             if bmi_value < 18.5:
                 bmi_status = "Underweight"
@@ -324,8 +329,80 @@ class UserManager():
                 bmi_status = "Obese"
 
             user_data["bmi_status"] = bmi_status
+            user_data["user_img"] = f"{avatar_path}/{img}"
             return ResponseModel(user_data, "user data retrieved successfully.")
         
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e),400)
+        
+    def user_custom_recipe(self,request,auth: HTTPAuthorizationCredentials):
+        try: 
+            # user = db.query(pg_models.User).get(auth.sub)
+            # user_data = user_details(user.id)
+            # if not user_data:
+            #     return ErrorResponseModel("User not found", 404)
+            
+            print('type of image -',type(request.food_img))
+            # Validate and parse the base64 data
+            if not request.food_img or not isinstance(request.food_img, str):
+                raise ValueError("Invalid or missing 'food_img' field in the request.")
+
+            if "base64," not in request.food_img:
+                raise ValueError("The 'food_img' field is not a valid base64-encoded image.")
+
+            base64_data = request.food_img.split(",")[1] # Extract base64 image data after the comma
+
+            image_data = base64.b64decode(base64_data) # Decode the base64 data
+
+            file_dir = os.path.join(os.getcwd(), 'public', 'images', 'avatars')
+
+            # Ensure the directory exists
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir, exist_ok=True)  # Creates the directory if it doesn't exist
+
+            img_name = f"{request.food_name}.jpg"  # Construct the image filename
+            file_path = os.path.join(file_dir, img_name)  # Full file path
+
+            # Save the image
+            with open(file_path, "wb") as f:
+                f.write(image_data)
+
+            calories  = 0
+            protein = 0
+            carbohydrates = 0
+            water = 0
+            fat = 0
+            vitamins = 0
+            fiber = 0
+            calcium = 0
+            sodium = 0
+            iron = 0
+            potassium = 0
+            for record in request.ingredient:
+                request2 = FoodMeasurementsFilter(food_id = record['food_id'], unit_id = record['unit_id'], no_of_units = record['no_of_units'])
+                data = nutritionController.get_food_nutrition_info(request2)
+                food_info = data['data']
+                calories  = calories + food_info['calories']
+                protein = protein + food_info['protein']
+                carbohydrates = carbohydrates + food_info['carbohydrates']
+                water = water + food_info['water']
+                fat = fat + food_info['fat']
+                vitamins = vitamins + food_info['vitamins']
+                fiber = fiber + food_info['fiber']
+                calcium = calcium + food_info['calcium']
+                sodium = sodium + food_info['sodium']
+                iron = iron + food_info['iron']
+                potassium = potassium + food_info['potassium']
+                print('data-->',data)
+
+            request3 =  AddCustomRecipe(user_id=request.user_id, food_name = request.food_name,description = request.description,
+                                        weight=request.weight,food_measurements=request.food_measurements,calories=calories,
+                                        protein=protein,carbohydrates=carbohydrates,water=water,fat=fat,vitamins=vitamins,
+                                        fiber=fiber,calcium=calcium,sodium=sodium,iron=iron,potassium=potassium)
+            create_new_custom_food_record(request3, img_name)
+            return ResponseModel(request, "Successfully added food record")
 
         except Exception as e:
             print(f"An error occurred: {str(e)}")

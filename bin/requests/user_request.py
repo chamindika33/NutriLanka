@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import date, datetime
 from pydantic import BaseModel,EmailStr, Field, field_validator
-from typing import List, Any, Optional , Union
+from typing import List, Any, Optional , Union,Dict
 from bin.services.custom_validations import email_validation
 
 class NewUser(BaseModel):
@@ -77,3 +77,27 @@ class AddCustomRecipe(BaseModel):
     iron: float
     potassium: float
     food_img: Optional[str] = None # Base64-encoded string
+
+
+class CustomRecipe(BaseModel):
+    user_id : str
+    food_name: str
+    description: Optional[str]
+    weight: float
+    food_measurements: str
+    ingredient: list
+    food_img: Optional[str] = None # Base64-encoded string
+    # ingredient: List[Dict[str, any]] # here need to pass food id , measurement and size
+
+#     [
+#     {
+#       "food_id": "9ba3251a-5c46-4e5b-bc58-61daaf4010e3",
+#       "measurement": "cups",
+#       "size": 1.5
+#     },
+#     {
+#       "food_id": "4acb234a-3e12-48fd-a6f7-74dd5e9f4b23",
+#       "measurement": "tablespoons",
+#       "size": 3
+#     }
+#   ]

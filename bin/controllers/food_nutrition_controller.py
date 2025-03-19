@@ -65,6 +65,7 @@ class NutritionController():
 
                 if (food_result.get("food_img")) and (food_result.get("food_img") is not None):
                     image_url = food_result.get("food_img")
+                    print('image url--->',image_url)
                     food_result["food_img"] = f"{avatar_path}/{image_url}"
 
                 if request.unit_id == 7:
@@ -93,15 +94,38 @@ class NutritionController():
         
     def filter_food(self,request):
 
-        data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
-        print('result--->',data['nutrition_data'])
-        fav = data['nutrition_data']
+        if request.filter_by == 'food':
+            data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
+            print('result--->',data)
+            fav_list = data['nutrition_data']
+            if not fav_list:
+                return ResponseModel(data, "No nutrition data found.")
+
+            fav = fav_list[0] 
+            
+            print('favvvv--->',fav)
+            if hasattr(fav,"__dict__"):
+                print('hiiii')
+                fav_dict = fav.__dict__.copy()
+                fav_dict['food_img'] = f"{avatar_path}/{fav.food_img}" if hasattr(fav, "food_img") else None
+                data["nutrition_data"] = fav_dict
+            return ResponseModel(data,"reterived data")
         
-        if hasattr(fav,"__dict__"):
-            fav_dict = fav.__dict__.copy()
-            fav_dict['food_img'] = f"{avatar_path}/{fav.food_img}" if hasattr(fav, "food_img") else None
-            data["nutrition_data"] = fav_dict
-        return ResponseModel(data,"reterived data")
+        else:
+            data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
+            print('result--->',data)
+            if not data:
+                return ResponseModel(data, "No nutrition data found.")
+
+            food_info = [
+                {
+                    **fav.__dict__,
+                    "food_img": f"{avatar_path}/{fav.food_img}"
+                }
+                for fav in data
+            ]
+            
+            return ResponseModel(food_info,"reterived data")
 
         
     def get_all_food_details(self,request):

@@ -1,6 +1,6 @@
 from fastapi import FastAPI,APIRouter,Query,Depends
 from fastapi.exceptions import HTTPException
-from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit,AvatarUpdateRequest,AddCustomRecipe
+from bin.requests.user_request import NewUser,UserLoginRequest,AddFavoriteItem,SetDieatGoals,SetDailyLimit,AvatarUpdateRequest,AddCustomRecipe,CustomRecipe
 from bin.middleware.user_middleware import Authorization
 from bin.services.custom_validations import check_user_email
 from bin.controllers.user_controller import userManager
@@ -60,3 +60,7 @@ async def get_user_custom_recipes(authentication=Depends(Authorization())):
 @router.get('/get-user-details')
 async def get_user_details(authentication=Depends(Authorization())):
     return userManager.send_user_details(auth=authentication)
+
+@router.post('/new-custom-recipes')
+def new_custom_recipes(request:CustomRecipe, authentication=Depends(Authorization())):
+    return userManager.user_custom_recipe(request,authentication)

@@ -66,7 +66,9 @@ def get_filter_data(filter_by,filter_pass,filter_name):
                 ).filter(
                     or_(
                         pg_models.NutritionInfo.native_name.ilike(filter_name),
-                        pg_models.NutritionInfo.native_name.ilike(f"{filter_name.lower()}%")
+                        pg_models.NutritionInfo.native_name.ilike(f"{filter_name.lower()}%"),
+                        pg_models.NutritionInfo.food_name.ilike(filter_name),
+                        pg_models.NutritionInfo.food_name.ilike(f"{filter_name.lower()}%")
                     )
                     
                 ).limit(ROW_LIMIT).all()
@@ -82,31 +84,37 @@ def get_filter_data(filter_by,filter_pass,filter_name):
                 ).all()
             
             if not result2:
-                return {"nutrition_data": result, "measurement_data": {}}
-            
-            unit_ids = {record.unit_id for record in result2}
+                default_unit = {
+                    "unit": "g",
+                    "unit_name": "grams",
+                    "unit_in_grams": 100,
+                    "unit_id": 7
+                }
+             
+            else:
+                unit_ids = {record.unit_id for record in result2}
 
-            units = db.query(pg_models.FoodUnit).filter(
-                    pg_models.FoodUnit.unit_id.in_(unit_ids)
-                ).all()
+                units = db.query(pg_models.FoodUnit).filter(
+                        pg_models.FoodUnit.unit_id.in_(unit_ids)
+                    ).all()
 
-            unit_map = {unit.unit_id: {
-                "unit": unit.unit_name,
-                "unit_name": unit.unit_name,
-                "unit_in_grams": unit.unit_in_grams,
-                "unit_id": unit.unit_id
-            } for unit in units}
+                unit_map = {unit.unit_id: {
+                    "unit": unit.unit_name,
+                    "unit_name": unit.unit_name,
+                    "unit_in_grams": unit.unit_in_grams,
+                    "unit_id": unit.unit_id
+                } for unit in units}
 
 
-            default_unit = {
-                "unit": "g",
-                "unit_name": "grams",
-                "unit_in_grams": 100,
-                "unit_id": 0
-            }
+                default_unit = {
+                    "unit": "g",
+                    "unit_name": "grams",
+                    "unit_in_grams": 100,
+                    "unit_id": 7
+                }
            
             measurement_data = OrderedDict()
-            measurement_data[default_unit["unit_id"]] = default_unit
+            measurement_data[0] = default_unit
                 
             for record in result2:
                 measurement_data[record.unit_id] = unit_map.get(record.unit_id, None)
@@ -137,6 +145,7 @@ def get_filter_data(filter_by,filter_pass,filter_name):
                     .limit(ROW_LIMIT)
                     .all()
                 )
+                
             else:
                 raise ValueError(f"Invalid filter pass: {filter_pass}")
 
