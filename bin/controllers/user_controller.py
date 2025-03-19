@@ -8,13 +8,14 @@ import os
 from mimetypes import guess_extension
 from bin.response.response_model import ResponseModel,ErrorResponseModel,FalseResponseModel
 from bin.services.api_service.hash_password import hash_password,verify_password
-from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit,user_details
+from bin.services.db_service.user_service import create_new_user,validate_user,add_record_to_favorite_list,get_food_list,insert_user_dietary_goal,update_user_dietary_values,get_user_dieatary_limit,user_details,check_food_record
 from bin.services.db_service.food_service import get_food_info
 from bin.services.db_service.custom_food_service import create_new_custom_food_record,get_user_custom_food_list
 from bin.services.jwt_auth import create_token
 from bin.requests.food_request import FoodMeasurementsFilter
 from bin.requests.user_request import AddCustomRecipe
 from bin.controllers.food_nutrition_controller import nutritionController
+from bin.decorators.check_user_fav_list import check_user_favourite_list
 from fastapi.security import HTTPAuthorizationCredentials
 from bin.db.postgresDB import db_connection
 from sqlalchemy.orm import Session
@@ -96,11 +97,15 @@ class UserManager():
         except Exception as e:
             raise e
         
-    
+    # @check_user_favourite_list
     def add_food_record_to_favorite_list(self,request,authentication):
         try:
             for food_id in request.food_ids:
-                add_record_to_favorite_list(request.user_id,food_id)
+                data = check_food_record(request.user_id,food_id)
+                if data:
+                    return ErrorResponseModel("This food already in favourite list", 400)
+                else:
+                    add_record_to_favorite_list(request.user_id,food_id)
 
             return ResponseModel(request,"Add food record to the user profile")
         
@@ -173,9 +178,9 @@ class UserManager():
                 remain_value = abs(total_burn_value - result_dict['target_value'])
 
                 result_dict['remaining_values'] = remain_value
-                if remain_value == 0 :
+                if total_burn_value == result.target_value :
                     result_dict['achievements'] = 'Goal Achieved'
-                elif remain_value > 0 :
+                elif total_burn_value < result.target_value :
                     result_dict['achievements'] = 'Under Achieved'
                 else:
                     result_dict['achievements'] = 'Over Achieved'

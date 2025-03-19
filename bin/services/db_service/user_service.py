@@ -66,6 +66,22 @@ def add_record_to_favorite_list(user_id,food_id):
     except SQLAlchemyError as e:
         db.rollback()
         return ErrorResponseModel(str(e), 404)
+    
+def check_food_record(user_id,food_id):
+    try:
+       
+        data = db.query(pg_models.UserFavoriteFoodInfo).filter(
+                (pg_models.UserFavoriteFoodInfo.user_id == user_id) and
+                (pg_models.UserFavoriteFoodInfo.food_id == food_id)
+            ).first()
+        
+        print('data-->',data)
+        
+        return data
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        return ErrorResponseModel(str(e), 404)
 
 def get_food_list(user_id):
     try:
