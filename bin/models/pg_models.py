@@ -2,10 +2,12 @@ from sqlite3.dbapi2 import Timestamp
 import uuid
 from sqlalchemy.orm import deferred, relationship
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Column, DateTime, func, ForeignKey
 from sqlalchemy import JSON, TEXT, Column, DateTime, String, Date, func , Integer,Float,Boolean
 from bin.db.postgresDB import Base,engine
 
+JSONVariant = JSON().with_variant(JSONB(), "postgresql")
 class Timestamp:
     created_at = Column(DateTime, default=func.now())  
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now()) 
@@ -21,7 +23,8 @@ class User(Base,Timestamp):
     # age = Column(Integer, nullable=True)
     date_of_birth = Column(Date, nullable=False)
     gender = Column(String(15), nullable=True)
-    location = Column(String(255), nullable=True)
+    phone_number = Column(String(10), nullable=False)
+    # location = Column(String(255), nullable=True)
     height = Column(Integer, nullable=False)  # In cm
     weight = Column(Integer, nullable=False)  # In kg
     bmi_value = Column(Float, nullable=False)
@@ -56,7 +59,34 @@ class NutritionInfo(Base):
     copper= Column(Float, index=True)
     manganese= Column(Float, index=True)
     food_img = Column(String, index=True)
-   
+    # ingredients = Column(JSON, index=True)
+
+class NewNutritionInfo(Base):
+    __tablename__ = 'new_nutrition_info'
+
+    food_id = Column(Integer, primary_key=True, index=True)
+    food_name = Column(String, index=True)
+    native_name = Column(String, index=True)
+    description = Column(String, index=True)
+    calories = Column(Float, index=True)
+    protein = Column(Float, index=True)
+    carbohydrates= Column(Float, index=True)
+    water= Column(Float, index=True)
+    fat= Column(Float, index=True)
+    vitamins= Column(Float, index=True)
+    fiber= Column(Float, index=True)
+    calcium= Column(Float, index=True)
+    magnesium= Column(Float, index=True)
+    phosphorus= Column(Float, index=True)
+    sodium= Column(Float, index=True)
+    potassium= Column(Float, index=True)
+    iron= Column(Float, index=True)
+    zinc= Column(Float, index=True)
+    selenium= Column(Float, index=True)
+    copper= Column(Float, index=True)
+    manganese= Column(Float, index=True)
+    food_img = Column(String, index=True)
+    ingredients = Column(JSONVariant, index=True, nullable=True)
 
 class UserFavoriteFoodInfo(Base):
     __tablename__ = 'user_favorite_food'

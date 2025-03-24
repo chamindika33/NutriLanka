@@ -11,7 +11,7 @@ class NewUser(BaseModel):
     # age:int
     date_of_birth : date
     gender:str
-    location:str
+    phone_number :str
     height:int #should be in cm
     weight:int
     dieatary_preferences:str

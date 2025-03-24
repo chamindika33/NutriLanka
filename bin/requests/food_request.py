@@ -1,6 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel,validator
-from typing import List, Optional
+from typing import List, Optional,Dict
+import json
 
 class NewFoodRecord(BaseModel):
     food_name: str
@@ -24,6 +25,10 @@ class NewFoodRecord(BaseModel):
     copper: float
     manganese: float
     food_img: Optional[str] = None # Base64-encoded string
+    ingredient: List[Dict]
+
+    def get_parsed_ingredient(self) -> List[Dict]:
+        return json.loads(self.ingredient)
 
 
 class FoodFilter(BaseModel):

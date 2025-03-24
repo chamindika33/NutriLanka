@@ -11,3 +11,4 @@ class FilterReportData(BaseModel):
     status: bool
     page_number : int
     record_per_page : int
+

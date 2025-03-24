@@ -55,3 +55,7 @@ def delete_specific_food_measurement(food_id : int, unit_id :int):
 def update_food_record(request:NewFoodRecord,food_id):
     print('type of image -',type(request.food_img))
     return nutritionController.update_existing_food(request,food_id)
+
+@router.post("/get-ingredient-list")
+def get_ingredient_list(request:FoodMeasurementsFilter):
+    return nutritionController.ingredient_list(request)

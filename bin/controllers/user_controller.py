@@ -40,7 +40,7 @@ class UserManager():
                 "password" : hash_password(request.password),
                 "date_of_birth" : request.date_of_birth,
                 "gender" : request.gender,
-                "location" : request.location,
+                "phone_number" : request.phone_number,
                 "height" : request.height,
                 "weight" : request.weight,
                 "bmi_value" : bmi_value,
@@ -74,7 +74,7 @@ class UserManager():
                             "email_address": user.email,
                             "date_of_birth": user.date_of_birth,
                             "gender": user.gender,
-                            "location": user.location,
+                            "phone_number": user.phone_number,
                             "height": user.height,
                             "weight": user.weight,
                             "bmi_value": user.bmi_value
@@ -389,17 +389,17 @@ class UserManager():
                 request2 = FoodMeasurementsFilter(food_id = record['food_id'], unit_id = record['unit_id'], no_of_units = record['no_of_units'])
                 data = nutritionController.get_food_nutrition_info(request2)
                 food_info = data['data']
-                calories  = calories + food_info['calories']
-                protein = protein + food_info['protein']
-                carbohydrates = carbohydrates + food_info['carbohydrates']
-                water = water + food_info['water']
-                fat = fat + food_info['fat']
-                vitamins = vitamins + food_info['vitamins']
-                fiber = fiber + food_info['fiber']
-                calcium = calcium + food_info['calcium']
-                sodium = sodium + food_info['sodium']
-                iron = iron + food_info['iron']
-                potassium = potassium + food_info['potassium']
+                calories  = round(calories + food_info['calories'],2)
+                protein = round(protein + food_info['protein'],2)
+                carbohydrates = round(carbohydrates + food_info['carbohydrates'],2)
+                water = round(water + food_info['water'],2)
+                fat = round(fat + food_info['fat'],2)
+                vitamins = round(vitamins + food_info['vitamins'],2)
+                fiber = round(fiber + food_info['fiber'],2)
+                calcium = round(calcium + food_info['calcium'],2)
+                sodium = round(sodium + food_info['sodium'],2)
+                iron = round(iron + food_info['iron'],2)
+                potassium = round(potassium + food_info['potassium'],2)
                 print('data-->',data)
 
             request3 =  AddCustomRecipe(user_id=request.user_id, food_name = request.food_name,description = request.description,

@@ -1,7 +1,8 @@
 import base64
 import os
+import json
 from bin.response.response_model import ErrorResponseModel,FalseResponseModel, ResponseModel
-from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food,update_existing_food_record
+from bin.services.db_service.food_service import create_new_food_record,get_food_info,get_filter_data,get_all_food_info,delete_records,insert_food_measurements,get_food_measurement_details,get_all_food_measurement,get_all_food_measurements_for_food,delete_food_measurements_for_food,update_existing_food_record,create_new_food_record2,get_food_ingredient_info
 
 avatar_path = os.getenv("AVATAR_PATH")
 
@@ -32,7 +33,10 @@ class NutritionController():
                 f.write(image_data)
 
             print(f"Image successfully saved at: {file_path}")
-            create_new_food_record(request, img_name)
+            print('request.ingredient',request.ingredient)
+            ingredient_json = request.ingredient
+            print('ingredient_json ',ingredient_json )
+            create_new_food_record2(request,ingredient_json, img_name)
             return ResponseModel(request, "Successfully added food record")
 
         except (ValueError, base64.binascii.Error) as e:
@@ -96,20 +100,30 @@ class NutritionController():
 
         if request.filter_by == 'food':
             data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
-            print('result--->',data)
             fav_list = data['nutrition_data']
+            print('result--->',fav_list)
             if not fav_list:
                 return ResponseModel(data, "No nutrition data found.")
 
-            fav = fav_list[0] 
-            
-            print('favvvv--->',fav)
-            if hasattr(fav,"__dict__"):
-                print('hiiii')
-                fav_dict = fav.__dict__.copy()
-                fav_dict['food_img'] = f"{avatar_path}/{fav.food_img}" if hasattr(fav, "food_img") else None
-                data["nutrition_data"] = fav_dict
-            return ResponseModel(data,"reterived data")
+            # fav = fav_list[0] 
+            food_info = [
+                {
+                    **fav,
+                    "food_img": f"{avatar_path}/{fav['food_img']}"
+                }
+                for fav in fav_list
+            ]
+            # print('favvvv--->',fav)
+            # if hasattr(fav,"__dict__"):
+            #     print('hiiii')
+            #     fav_dict = fav.__dict__.copy()
+            #     fav_dict['food_img'] = f"{avatar_path}/{fav.food_img}" if hasattr(fav, "food_img") else None
+            #     data["nutrition_data"] = fav_dict
+            response_data = {
+                "nutrition_data": food_info, 
+                "measurement_data": data.get("measurement_data", [])  
+            }
+            return ResponseModel(response_data,"reterived data")
         
         else:
             data = get_filter_data(request.filter_by,request.filter_pass,request.filter_name)
@@ -203,14 +217,12 @@ class NutritionController():
         try:
             result = get_all_food_measurements_for_food(food_id)
             print('result-->',result)
-            food_list = []
-            # food_list.append({
-            #         "unit_id":7,
-            #         "unit": 'g',
-            #         "unit_name": 'gram',
-            #         "weight_in_grams": 1
-
-            #     })
+            food_list = [{
+                    "unit": "g",
+                    "unit_name": "grams",
+                    "weight_in_grams": 100,
+                    "unit_id": 7
+                }]
             if result:
                 for food_measurement, food_unit in result:
                     food_list.append({
@@ -268,6 +280,56 @@ class NutritionController():
         except (ValueError, base64.binascii.Error) as e:
             print(f"Invalid image data: {str(e)}")  # Handle specific decoding or format errors
             return ErrorResponseModel(str(e), 400)
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return ErrorResponseModel(str(e), 400)
+        
+    def ingredient_list(self,request):
+        try:
+            food_result = get_food_info(request.food_id)
+            print('food result -->', food_result)
+
+            if food_result:
+                if hasattr(food_result, "__dict__"):
+                    food_result = food_result.__dict__
+
+                food_result = {k: v for k, v in food_result.items() if not k.startswith('_')}   
+
+                if (food_result.get("food_img")) and (food_result.get("food_img") is not None):
+                    image_url = food_result.get("food_img")
+                    print('image url--->',image_url)
+                    food_result["food_img"] = f"{avatar_path}/{image_url}"
+
+                if request.unit_id == 7:
+                    # Scale nutritional values based on size (default values are for 100g)
+                    size = request.no_of_units
+                  
+                else:
+                    data = get_food_measurement_details(request.food_id,request.unit_id)
+                    size = data.weight_in_grams * request.no_of_units
+
+                if request.no_of_units > 0:
+                    scale_factor = size / 100
+                    ingredients = food_result.get("ingredients", [])
+                    for ing in ingredients:
+                        if isinstance(ing, dict) and "grams" in ing:
+                            original_grams = ing["grams"]
+                            ing["grams"] = round(original_grams * scale_factor, 2)
+
+                    food_result["ingredients"] = ingredients
+                
+                food_result = {
+                        "food_name": food_result.get("food_name"),
+                        "food_img": food_result.get("food_img"),
+                        "ingredients": food_result.get("ingredients")
+                    }
+
+                return ResponseModel(food_result, "Successfully retrieved the data")
+            
+            else:
+                return ResponseModel(food_result, "No data found")
+
 
         except Exception as e:
             print(f"An error occurred: {str(e)}")

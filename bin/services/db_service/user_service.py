@@ -1,6 +1,6 @@
 from bin.db.postgresDB import db_connection
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import delete,update,exists,func
+from sqlalchemy import delete,update,exists,func,and_
 from bin.models import pg_models
 from sqlalchemy.exc import SQLAlchemyError
 from bin.response.response_model import ErrorResponseModel
@@ -19,7 +19,7 @@ async def create_new_user(user):
             email = user["email"],
             date_of_birth = user["date_of_birth"],
             gender = user["gender"],
-            location = user["location"],
+            phone_number = user["phone_number"],
             height = user["height"],
             weight = user["weight"],
             bmi_value = user["bmi_value"],
@@ -69,10 +69,11 @@ def add_record_to_favorite_list(user_id,food_id):
     
 def check_food_record(user_id,food_id):
     try:
-       
+        print('user_id',user_id)
+        print('food_id',food_id)
         data = db.query(pg_models.UserFavoriteFoodInfo).filter(
-                (pg_models.UserFavoriteFoodInfo.user_id == user_id) and
-                (pg_models.UserFavoriteFoodInfo.food_id == food_id)
+                and_(pg_models.UserFavoriteFoodInfo.user_id == user_id,
+                pg_models.UserFavoriteFoodInfo.food_id == food_id)
             ).first()
         
         print('data-->',data)
