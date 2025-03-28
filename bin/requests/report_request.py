@@ -12,3 +12,7 @@ class FilterReportData(BaseModel):
     page_number : int
     record_per_page : int
 
+
+class ImageBase64Request(BaseModel):
+    base64_image: str 
+

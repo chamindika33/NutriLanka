@@ -1,3 +1,4 @@
+import base64
 import json
 import re
 from PIL import Image
@@ -5,7 +6,7 @@ import io
 from fastapi import FastAPI,APIRouter,Query,Depends,UploadFile, File
 from fastapi.exceptions import HTTPException
 import google.generativeai as genai
-from bin.requests.report_request import AllUserData,FilterReportData
+from bin.requests.report_request import AllUserData,FilterReportData,ImageBase64Request
 from bin.controllers.report_controller import reportManager
 from bin.controllers.food_image_controller import parse_nutrition_response
 
@@ -39,17 +40,20 @@ async def import_csv_file(file: UploadFile = File(...)):
         return await reportManager.csv_file(file)
     
 @router.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
-    # Validate file type (basic check)
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
+async def upload_image(request: ImageBase64Request):
 
-    # Read the image bytes
-    contents = await file.read()
+    if "base64," in request.base64_image:
+        base64_data = request.base64_image.split("base64,", 1)[1]
+    else:
+        base64_data = request.base64_image
 
     try:
         # Open image using PIL
-        image = Image.open(io.BytesIO(contents))
+        image_bytes = base64.b64decode(base64_data)
+
+        # Step 3: Open image from bytes
+        image = Image.open(io.BytesIO(image_bytes))
+
         prompt = """
             This is a food image. Identify the food item, list its main ingredients, and estimate the nutritional information per serving.
 
